@@ -2,8 +2,8 @@ defmodule Fuzzy.Distance do
   @moduledoc """
   String distance algorithms.
   """
-  @spec levenshtein(String.t(), String.t()) :: non_neg_integer()
 
+  @spec levenshtein(String.t(), String.t()) :: non_neg_integer()
   def levenshtein(s, s), do: 0
   def levenshtein(s, ""), do: String.length(s)
   def levenshtein("", s), do: String.length(s)
