@@ -53,4 +53,33 @@ defmodule Fuzzy do
       |> Enum.max(fn -> 0.00 end)
     end
   end
+
+  @doc """
+  Compare strings after sorting their tokens alphabetically.
+  """
+  @spec token_sort_ratio(String.t(), String.t()) :: float()
+  def token_sort_ratio(s1, s2) do
+    t1 = process_and_sort(s1)
+    t2 = process_and_sort(s2)
+    ratio(t1, t2)
+  end
+
+  # -----------------------------------------------------------------
+  # Helpers
+
+  defp process_string(s) do
+    s
+    |> String.downcase()
+    |> String.replace(~r/[^\p{L}\p{N}\s]/u, "")
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
+  end
+
+  defp process_and_sort(s) do
+    s
+    |> process_string()
+    |> String.split()
+    |> Enum.sort()
+    |> Enum.join(" ")
+  end
 end

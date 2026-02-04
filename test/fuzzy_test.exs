@@ -68,4 +68,24 @@ defmodule FuzzyTest do
       assert partial > full
     end
   end
+
+  describe "token_sort_ratio/2" do
+    test "handles different word order" do
+      assert Fuzzy.token_sort_ratio("fuzzy wuzzy was a bear", "wuzzy fuzzy was a bear") == 1.00
+      assert Fuzzy.token_sort_ratio("New York Mets", "Mets New York") == 1.00
+    end
+
+    test "is case insensitive" do
+      assert Fuzzy.token_sort_ratio("Hello World", "world hello") == 1.00
+    end
+
+    test "ignores punctuation" do
+      assert Fuzzy.token_sort_ratio("hello, world!", "world hello") == 1.00
+      assert Fuzzy.token_sort_ratio("test: one two", "two one test") == 1.00
+    end
+
+    test "handles extra whitespace" do
+      assert Fuzzy.token_sort_ratio("hello   world", "world  hello") == 1.00
+    end
+  end
 end
