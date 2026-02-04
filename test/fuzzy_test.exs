@@ -35,6 +35,16 @@ defmodule FuzzyTest do
       assert Fuzzy.ratio("日本語", "日本") == 0.67
       assert Fuzzy.ratio("👋🌍", "👋🌎") == 0.50
     end
+
+    test "with jaro metric" do
+      assert_in_delta Fuzzy.ratio("dwayne", "duane", metric: :jaro), 0.82, 0.01
+      assert Fuzzy.ratio("hello", "hello", metric: :jaro) == 1.0
+    end
+
+    test "with jaro_winkler metric" do
+      assert_in_delta Fuzzy.ratio("dwayne", "duane", metric: :jaro_winkler), 0.84, 0.01
+      assert Fuzzy.ratio("martha", "marhta", metric: :jaro_winkler) > Fuzzy.ratio("martha", "marhta", metric: :jaro)
+    end
   end
 
   describe "partial_ratio/2" do
@@ -87,6 +97,18 @@ defmodule FuzzyTest do
     test "handles extra whitespace" do
       assert Fuzzy.token_sort_ratio("hello   world", "world  hello") == 1.00
     end
+
+    test "empty strings" do
+      assert Fuzzy.token_sort_ratio("", "") == 1.0
+      assert Fuzzy.token_sort_ratio("hello", "") == 0.0
+    end
+
+    test "with different metrics" do
+      score_lev = Fuzzy.token_sort_ratio("hello world", "world hello", metric: :levenshtein)
+      score_jaro = Fuzzy.token_sort_ratio("hello world", "world hello", metric: :jaro)
+      assert score_lev == 1.0
+      assert score_jaro == 1.0
+    end
   end
 
   describe "token_set_ratio/2" do
@@ -108,6 +130,15 @@ defmodule FuzzyTest do
     test "completely different words" do
       score = Fuzzy.token_set_ratio("abc def", "xyz uvw")
       assert score < 0.50
+    end
+
+    test "empty strings" do
+      assert Fuzzy.token_set_ratio("", "") == 1.0
+    end
+
+    test "with different metrics" do
+      score = Fuzzy.token_set_ratio("hello world", "world hello", metric: :jaro_winkler)
+      assert score == 1.0
     end
   end
 end

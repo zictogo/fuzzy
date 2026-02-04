@@ -8,9 +8,12 @@ defmodule Similarity do
   - `:levenshtein` - Good general-purpose metric.
   - `:jaro` - Good for short strings.
   - `:jaro_winkler` - Best for names.
+
   """
 
   alias Metrics.Levenshtein
+  alias Metrics.Jaro
+  alias Metrics.JaroWinkler
 
   @type metric :: :levenshtein | :jaro | :jaro_winkler
 
@@ -28,9 +31,6 @@ defmodule Similarity do
     1.0 - distance / max_length
   end
 
-  # def similarity(s1, s2, :jaro), do: jaro(s1, s2)
-  def similarity(_s1, _s2, :jaro), do: 1
-
-  # def similarity(s1, s2, :jaro_winkler), do: jaro_winkler(s1, s2)
-  def similarity(_s1, _s2, :jaro_winkler), do: 1
+  def similarity(s1, s2, :jaro), do: Jaro.similarity(s1, s2)
+  def similarity(s1, s2, :jaro_winkler), do: JaroWinkler.similarity(s1, s2)
 end

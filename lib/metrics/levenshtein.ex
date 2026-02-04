@@ -17,6 +17,10 @@ defmodule Metrics.Levenshtein do
   """
 
   @spec distance(String.t(), String.t()) :: non_neg_integer()
+  def distance(s, s), do: 0
+  def distance(s, ""), do: String.length(s)
+  def distance("", s), do: String.length(s)
+
   def distance(s1, s2) do
     # convert to graphemes for proper Unicode support
     g1 = String.graphemes(s1)
