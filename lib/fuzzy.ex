@@ -3,7 +3,7 @@ defmodule Fuzzy do
   Fuzzy string matching.
   """
 
-  alias Fuzzy.Distance
+  alias Similarity
 
   @doc """
   Calculate similarity ratio between two strings.
@@ -15,9 +15,7 @@ defmodule Fuzzy do
   def ratio(_, ""), do: 0.00
 
   def ratio(s1, s2) do
-    distance = Distance.levenshtein(s1, s2)
-    max_length = max(String.length(s1), String.length(s2))
-    similarity = 1 - distance / max_length
+    similarity = Similarity.similarity(s1, s2, :levenshtein)
     Float.round(similarity, 2)
   end
 
