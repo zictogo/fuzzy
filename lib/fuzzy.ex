@@ -10,7 +10,7 @@ defmodule Fuzzy do
       # Using default (Levenshtein)
       Fuzzy.ratio("hello", "hallo")
       # => 80.0
-      
+
       # Using Jaro-Winkler (better for names)
       Fuzzy.ratio("dwayne", "duane", metric: :jaro_winkler)
       # => 84.0
@@ -19,7 +19,9 @@ defmodule Fuzzy do
 
   - `:levenshtein` - Good general-purpose metric.
   - `:jaro` - Good for short strings.
-  - `:jaro_winkler` - Best for names.
+  - `:jaro_winkler` - Best for names. Supports additional options:
+    - `:prefix_weight` - Weight for common prefix bonus (default: 0.1)
+    - `:prefix_length` - Maximum prefix length to consider (default: 4)
 
   """
 
@@ -40,8 +42,8 @@ defmodule Fuzzy do
   def ratio(_, "", _), do: 0.0
 
   def ratio(s1, s2, opts) do
-    metric = Keyword.get(opts, :metric, @default_metric)
-    similarity = Similarity.similarity(s1, s2, metric)
+    opts = Keyword.put_new(opts, :metric, @default_metric)
+    similarity = Similarity.similarity(s1, s2, opts)
     Float.round(similarity, 2)
   end
 

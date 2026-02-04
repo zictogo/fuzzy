@@ -17,20 +17,28 @@ defmodule Similarity do
 
   @type metric :: :levenshtein | :jaro | :jaro_winkler
 
-  @spec similarity(String.t(), String.t(), metric()) :: float()
-  def similarity(s1, s2, metric \\ :levenshtein)
+  @spec similarity(String.t(), String.t(), keyword()) :: float()
+  def similarity(s1, s2, opts \\ [])
 
-  def similarity(s, s, _metric), do: 1.0
-  def similarity("", "", _metric), do: 1.0
-  def similarity("", _, _metric), do: 0.0
-  def similarity(_, "", _metric), do: 0.0
+  def similarity(s, s, _opts), do: 1.0
+  def similarity("", "", _opts), do: 1.0
+  def similarity("", _, _opts), do: 0.0
+  def similarity(_, "", _opts), do: 0.0
 
-  def similarity(s1, s2, :levenshtein) do
-    distance = Levenshtein.distance(s1, s2)
-    max_length = max(String.length(s1), String.length(s2))
-    1.0 - distance / max_length
+  def similarity(s1, s2, opts) do
+    metric = Keyword.get(opts, :metric, :levenshtein)
+
+    case metric do
+      :levenshtein ->
+        distance = Levenshtein.distance(s1, s2)
+        max_length = max(String.length(s1), String.length(s2))
+        1.0 - distance / max_length
+
+      :jaro ->
+        Jaro.similarity(s1, s2)
+
+      :jaro_winkler ->
+        JaroWinkler.similarity(s1, s2, opts)
+    end
   end
-
-  def similarity(s1, s2, :jaro), do: Jaro.similarity(s1, s2)
-  def similarity(s1, s2, :jaro_winkler), do: JaroWinkler.similarity(s1, s2)
 end
