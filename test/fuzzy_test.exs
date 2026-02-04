@@ -36,4 +36,36 @@ defmodule FuzzyTest do
       assert Fuzzy.ratio("👋🌍", "👋🌎") == 0.50
     end
   end
+
+  describe "partial_ratio/2" do
+    test "identical strings" do
+      assert Fuzzy.partial_ratio("paper", "paper") == 1.00
+      assert Fuzzy.partial_ratio("test", "test") == 1.00
+    end
+
+    test "substring contained in string" do
+      assert Fuzzy.partial_ratio("yankees", "new york yankees") == 1.00
+      assert Fuzzy.partial_ratio("test", "this is a test") == 1.00
+    end
+
+    test "is symmetric" do
+      assert Fuzzy.partial_ratio("new york yankees", "yankees") ==
+               Fuzzy.partial_ratio("yankees", "new york yankees")
+
+      assert Fuzzy.partial_ratio("test", "this is a test") ==
+               Fuzzy.partial_ratio("this is a test", "test")
+    end
+
+    test "empty strings" do
+      assert Fuzzy.partial_ratio("", "") == 1.00
+      assert Fuzzy.partial_ratio("paper", "") == 1.00
+      assert Fuzzy.partial_ratio("", "paper") == 1.00
+    end
+
+    test "partial ratio is higher than ratio" do
+      partial = Fuzzy.partial_ratio("yankees", "new york yankees")
+      full = Fuzzy.ratio("yankees", "new york yankees")
+      assert partial > full
+    end
+  end
 end
