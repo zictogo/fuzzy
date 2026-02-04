@@ -64,6 +64,54 @@ defmodule Fuzzy do
     ratio(t1, t2)
   end
 
+  @doc """
+  Compare strings using set operations on tokens.
+  """
+  @spec token_set_ratio(String.t(), String.t()) :: float()
+  def token_set_ratio(s1, s2) do
+    tokens1 =
+      s1
+      |> process_string()
+      |> String.split()
+      |> MapSet.new()
+
+    tokens2 =
+      s2
+      |> process_string()
+      |> String.split()
+      |> MapSet.new()
+
+    intersection = MapSet.intersection(tokens1, tokens2)
+    diff1 = MapSet.difference(tokens1, tokens2)
+    diff2 = MapSet.difference(tokens2, tokens1)
+
+    sorted_intersection =
+      intersection
+      |> Enum.sort()
+      |> Enum.join(" ")
+
+    sorted_diff1 =
+      diff1
+      |> Enum.sort()
+      |> Enum.join(" ")
+
+    sorted_diff2 =
+      diff2
+      |> Enum.sort()
+      |> Enum.join(" ")
+
+    combined1 = String.trim("#{sorted_intersection} #{sorted_diff1}")
+    combined2 = String.trim("#{sorted_intersection} #{sorted_diff2}")
+
+    # returns the best of three comparisons
+    [
+      ratio(sorted_intersection, combined1),
+      ratio(sorted_intersection, combined2),
+      ratio(combined1, combined2)
+    ]
+    |> Enum.max()
+  end
+
   # -----------------------------------------------------------------
   # Helpers
 

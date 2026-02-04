@@ -88,4 +88,26 @@ defmodule FuzzyTest do
       assert Fuzzy.token_sort_ratio("hello   world", "world  hello") == 1.00
     end
   end
+
+  describe "token_set_ratio/2" do
+    test "handle duplicate words" do
+      assert Fuzzy.token_set_ratio("fuzzy was a bear", "fuzzy fuzzy was a bear") == 1.00
+    end
+
+    test "handles extra words gracefully" do
+      score =
+        Fuzzy.token_set_ratio("mariners vs angels", "los angeles angels at seattle mariners")
+
+      assert score >= 0.80
+    end
+
+    test "identical sets of words" do
+      assert Fuzzy.token_set_ratio("hello world", "world hello") == 1.00
+    end
+
+    test "completely different words" do
+      score = Fuzzy.token_set_ratio("abc def", "xyz uvw")
+      assert score < 0.50
+    end
+  end
 end
