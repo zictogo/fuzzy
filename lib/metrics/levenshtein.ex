@@ -15,17 +15,39 @@ defmodule Metrics.Levenshtein do
   We only keep two rows of the matrix at a time, and we ensure the shorter
   string determines the row length.
   """
+  @type scaling :: :max_length | :sum_lengths
 
-  @spec distance(String.t(), String.t()) :: non_neg_integer()
-  def distance(s, s), do: 0
-  def distance(s, ""), do: String.length(s)
-  def distance("", s), do: String.length(s)
+  @spec similarity(String.t(), String.t(), keyword()) :: float()
+  def similarity(s1, s2, opts \\ [])
 
-  def distance(s1, s2) do
-    # convert to graphemes for proper Unicode support
+  def similarity(s, s, _), do: 1.0
+  def similarity("", _, _), do: 0.0
+  def similarity(_, "", _), do: 0.0
+
+  def similarity(s1, s2, opts) do
+    {scaling, _} = Keyword.pop(opts, :scaling, :sum_lengths)
+
     g1 = String.graphemes(s1)
     g2 = String.graphemes(s2)
+    length1 = length(g1)
+    length2 = length(g2)
+    distance = distance(g1, g2)
 
+    case scaling do
+      :max_length ->
+        1.0 - distance / max(length1, length2)
+
+      :sum_lengths ->
+        (length1 + length2 - distance) / (length1 + length2)
+    end
+  end
+
+  @spec distance(list(), list()) :: non_neg_integer()
+  defp distance(g, g), do: 0
+  defp distance(g, []), do: length(g)
+  defp distance([], g), do: length(g)
+
+  defp distance(g1, g2) do
     {g1, g2} = if length(g1) > length(g2), do: {g2, g1}, else: {g1, g2}
 
     # represents the cost of transforming "" to g1

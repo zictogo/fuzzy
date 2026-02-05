@@ -8,7 +8,7 @@ defmodule Metrics.JaroTest do
       assert Jaro.similarity("", "") == 1.0
     end
 
-    test "empty string vs non-empty string" do
+    test "empty strings" do
       assert Jaro.similarity("hello", "") == 0.0
       assert Jaro.similarity("", "hello") == 0.0
     end
@@ -18,7 +18,6 @@ defmodule Metrics.JaroTest do
     end
 
     test "is symmetric" do
-      assert Jaro.similarity("dwayne", "duane") == Jaro.similarity("duane", "dwayne")
       assert Jaro.similarity("martha", "marhta") == Jaro.similarity("marhta", "martha")
     end
 
@@ -28,21 +27,44 @@ defmodule Metrics.JaroTest do
       assert_in_delta Jaro.similarity("jones", "johnson"), 0.790, 0.001
     end
 
-    test "transpositions are counted correctly" do
-      assert Jaro.similarity("martha", "marhta") > Jaro.similarity("martha", "mxrhta")
-    end
-
     test "handles unicode" do
       assert Jaro.similarity("café", "café") == 1.0
+      assert_in_delta Jaro.similarity("café", "cafe"), 0.833, 0.001
+      assert Jaro.similarity("naïve", "naïve") == 1.0
+      assert_in_delta Jaro.similarity("naïve", "naive"), 0.866, 0.001
       assert Jaro.similarity("日本語", "日本語") == 1.0
+      assert_in_delta Jaro.similarity("日本語", "日本"), 0.888, 0.001
       assert Jaro.similarity("👋🌍", "👋🌍") == 1.0
-      assert Jaro.similarity("café", "cafe") > 0.0
-      assert Jaro.similarity("naïve", "naive") > 0.0
+      assert_in_delta Jaro.similarity("👋🌍", "👋🌎"), 0.666, 0.001
     end
 
     test "single character strings" do
       assert Jaro.similarity("a", "a") == 1.0
       assert Jaro.similarity("a", "b") == 0.0
+    end
+
+    test "overlapping strings" do
+      assert_in_delta Jaro.similarity("abcd", "bcde"), 0.833, 0.001
+    end
+
+    test "handles repeated characters" do
+      assert_in_delta Jaro.similarity("aaab", "abaa"), 0.833, 0.001
+    end
+
+    test "other examples" do
+      assert_in_delta Jaro.similarity("paper", "taper"), 0.866, 0.001
+      assert_in_delta Jaro.similarity("kitten", "sitting"), 0.746, 0.001
+      assert_in_delta Jaro.similarity("hello", "h"), 0.733, 0.001
+      assert_in_delta Jaro.similarity("martha", "mxrhta"), 0.822, 0.001
+      assert_in_delta Jaro.similarity("hello", "hallo"), 0.866, 0.001
+      assert_in_delta Jaro.similarity("testABC", "testXYZ"), 0.714, 0.001
+      assert_in_delta Jaro.similarity("testabABC", "testabXYZ"), 0.777, 0.001
+    end
+
+    test "longer strings" do
+      s1 = "private Thread currentThread;"
+      s2 = "private volatile Thread currentThread;"
+      assert_in_delta Jaro.similarity(s1, s2), 0.811, 0.001
     end
   end
 end

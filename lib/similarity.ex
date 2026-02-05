@@ -5,17 +5,19 @@ defmodule Similarity do
 
   ## Available Metrics
 
+  - `:sequence_matcher` - Default. Ratcliff/Obershelp algorithm.
   - `:levenshtein` - Good general-purpose metric.
   - `:jaro` - Good for short strings.
   - `:jaro_winkler` - Best for names.
 
   """
 
+  alias Metrics.SequenceMatcher
   alias Metrics.Levenshtein
   alias Metrics.Jaro
   alias Metrics.JaroWinkler
 
-  @type metric :: :levenshtein | :jaro | :jaro_winkler
+  @type metric :: :sequence_matcher | :levenshtein | :jaro | :jaro_winkler
 
   @spec similarity(String.t(), String.t(), keyword()) :: float()
   def similarity(s1, s2, opts \\ [])
@@ -26,19 +28,13 @@ defmodule Similarity do
   def similarity(_, "", _opts), do: 0.0
 
   def similarity(s1, s2, opts) do
-    metric = Keyword.get(opts, :metric, :levenshtein)
+    {metric, opts} = Keyword.pop(opts, :metric, :sequence_matcher)
 
     case metric do
-      :levenshtein ->
-        distance = Levenshtein.distance(s1, s2)
-        max_length = max(String.length(s1), String.length(s2))
-        1.0 - distance / max_length
-
-      :jaro ->
-        Jaro.similarity(s1, s2)
-
-      :jaro_winkler ->
-        JaroWinkler.similarity(s1, s2, opts)
+      :sequence_matcher -> SequenceMatcher.similarity(s1, s2)
+      :levenshtein -> Levenshtein.similarity(s1, s2, opts)
+      :jaro -> Jaro.similarity(s1, s2)
+      :jaro_winkler -> JaroWinkler.similarity(s1, s2, opts)
     end
   end
 end
